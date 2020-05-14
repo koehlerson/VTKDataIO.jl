@@ -1,10 +1,11 @@
 module VTKDataIO
 
 using VTKDataTypes
+using Printf
 using WriteVTK
 using PyCall
 using LightXML
-using Iterators
+using Base.Iterators
 
 @pyimport vtk.util.numpy_support as vtkns
 @pyimport vtk as vtk

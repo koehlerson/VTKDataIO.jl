@@ -5,7 +5,7 @@ function get_filepath_info_no_ext(filepath_no_ext)
     return (typeof(_matched["dir"]) == Void ? "" : _matched["dir"]), _matched["file"]
 end
 
-function write_simple_file{T<:AbstractVTKSimpleData}(vtkobject::T, filepath_or_vtmfile::Union{String, WriteVTK.MultiblockFile})
+function write_simple_file(vtkobject::T, filepath_or_vtmfile::Union{String, WriteVTK.MultiblockFile}) where T<:AbstractVTKSimpleData
     vtkfile = nothing
     if T <: VTKUnstructuredData
         points = vtkobject.point_coords
@@ -145,7 +145,7 @@ function valid_to_write(vtkobject::AbstractTimeSeriesVTKData)
     return true, ""
 end
 
-function write_vtk{T<:AbstractVTKData}(vtkobject::T, filepath_no_ext::String; time_resolution::Int=1, validation=false, repeat_cells=false)
+function write_vtk(vtkobject::T, filepath_no_ext::String; time_resolution::Int=1, validation=false, repeat_cells=false) where T<:AbstractVTKData
     if validation
         valid, _error = is_valid(vtkobject, repeat_cells=repeat_cells)
         valid || throw("Invalid data, cannot be written: $_error")

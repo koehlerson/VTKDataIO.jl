@@ -119,7 +119,7 @@ function write_ply(dataset, filepath_noext; color="", component=-1, opacity=1., 
     end
 end
 
-function get_jl_mapped_colors{T<:AbstractVTKSimpleData}(vtkobject, dataset::T, color_variable_name, component, opacity)
+function get_jl_mapped_colors(vtkobject, dataset::T, color_variable_name, component, opacity) where T<:AbstractVTKSimpleData
     if color_variable_name in keys(dataset.point_data)
         point_color = true
         _size = num_of_points(dataset)
@@ -280,7 +280,7 @@ function color_map(v)
         g = v/0.25
         r = 0.
     elseif .25 <= v < .5
-        b = 1.-(v-0.25)/0.25
+        b = 1. - (v-0.25)/0.25
         g = 1.
         r = 0.
     elseif .5 <= v < .75
@@ -289,7 +289,7 @@ function color_map(v)
         r = (v-0.5)/0.25
     else
         b = 0.
-        g = 1.-(v-0.75)/0.25
+        g = 1. - (v-0.75)/0.25
         r = 1.
     end
     return [r,g,b]
@@ -304,9 +304,9 @@ function setup_camera(camera, dataset)
     camera[:Dolly](0.2/calib)
 end
 
-function make_render_window_and_interactor{T<:AbstractStaticVTKData}(dataset::T, color, 
+function make_render_window_and_interactor(dataset::T, color, 
     RGB, component, opacity, window_size, ncolors, legend, legendtitle, scale_factor, 
-    representation)
+    representation) where T<:AbstractStaticVTKData
 
     vtkobject = PyVTK(dataset)
 
