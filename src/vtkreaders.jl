@@ -1,6 +1,6 @@
 
 #vtk_to_julia(x, T) = Array{T}(PyReverseDims(vtkns.vtk_to_numpy(x)))
-#vtk_to_julia(x,T) = Array{T}(PyReverseDims(x))
+vtk_to_julia(x) = PyArray((PyReverseDims(x)))
 
 function pytype_as_string(x) 
     pytype = pybuiltin(:str)(pybuiltin(:type)(x))
@@ -253,7 +253,7 @@ function get_structured_point_and_cell_data(block)
 		if pytype_as_string(_point_data) != "NoneType" && pytype_as_string(_point_data) != nothing
 			println("pytype as string of point data ",pytype_as_string(_point_data))
            #_point_data_ = vtk_to_julia(_point_data, Float64)
-		   _point_data_ = PyArray(PyReverseDims(_point_data)) 
+		   _point_data_ = vtk_to_julia(_point_data) 
 		   var_dim = length(size(_point_data_)) == 1 ? 1 : size(_point_data_,1)
             if var_dim == 1
                 point_data[var_name] = reshape(_point_data_, _extents)
@@ -271,7 +271,7 @@ function get_structured_point_and_cell_data(block)
         push!(cell_vars_names, var_name)
         _cell_data = block.GetCellData().GetArray(i-1)
 		if pytype_as_string(_cell_data) != "NoneType" && pytype_as_string(_cell_data) != nothing 
-			_cell_data_ = PyArray(PyReverseDims(_cell_data))
+			_cell_data_ = vtk_to_julia(_cell_data)
             var_dim = length(size(_cell_data_)) == 1 ? 1 : size(_cell_data_,1)
             if var_dim == 1
                 cell_data[var_name] = reshape(_cell_data_, cell_extents)
@@ -285,7 +285,7 @@ function get_structured_point_and_cell_data(block)
 end
 
 function extract_structured_data(block)
-    _point_coords = vtk_to_julia(block.GetPoints().GetData(), Float64)
+    _point_coords = vtk_to_julia(block.GetPoints().GetData())
 
     _extents = block.GetDimensions()
     _dim = length(_extents)
@@ -293,6 +293,7 @@ function extract_structured_data(block)
     point_data, cell_data = get_structured_point_and_cell_data(block)
     return VTKStructuredData(point_coords, point_data, cell_data)
 end
+
 function extract_rectilinear_data(block)
     extents = block.GetDimensions()
     dim = length(extents)
@@ -311,8 +312,9 @@ function extract_rectilinear_data(block)
     end
     
     point_data, cell_data = get_structured_point_and_cell_data(block)
-    return VTKRectilinearData(point_coords, point_data, cell_data)
+	return VTKRectilinearData(tuple(point_coords), point_data, cell_data)
 end
+
 function extract_image_data(block)
 	origin = (block.GetOrigin()...,)
 	spacing = (block.GetSpacing()...,)
