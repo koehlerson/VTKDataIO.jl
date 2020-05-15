@@ -230,12 +230,14 @@ function extract_unstructured_data(block, poly = false)
     end
 
     point_data, cell_data = get_unstructured_point_and_cell_data(block)
-
+	point_coords = Matrix(point_coords)
+	println("this is point_coords",point_coords)
+	println("this is cell_types", _cell_types)
     if poly
-        return VTKPolyData(point_coords, _cell_types, _cell_connectivity, point_data, cell_data)
+		return VTKPolyData(point_coords, _cell_types,_cell_connectivity, point_data, cell_data)
     end
 
-    return VTKUnstructuredData(point_coords, _cell_types, _cell_connectivity, point_data, cell_data)
+	return VTKUnstructuredData(point_coords, _cell_types, _cell_connectivity, point_data, cell_data)
 end
 
 function get_structured_point_and_cell_data(block)
@@ -285,8 +287,8 @@ function extract_structured_data(block)
     _dim = length(_extents)
 	point_coords = reshape(_point_coords, (_dim, _extents...))
     point_data, cell_data = get_structured_point_and_cell_data(block)
-	println("point coords as tuple ", tuple(point_coords))
-	println("try to fix point coords as tuple ", [point_coords...])
+	#println("point coords as tuple ", tuple(point_coords))
+	#println("try to fix point coords as tuple ", [point_coords...])
 	return VTKStructuredData([point_coords...], point_data, cell_data)
 end
 
