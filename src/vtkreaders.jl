@@ -138,7 +138,7 @@ function get_unstructured_point_and_cell_data(block)
         push!(point_vars_names, var_name)
         _point_data = block.GetPointData().GetArray(i-1)
         if pytype_as_string(_point_data) != "NoneType"
-            point_data[var_name] = vtk_to_julia(_point_data, Float64)
+            point_data[var_name] = vtk_to_julia(_point_data)
         end
     end
 
@@ -149,20 +149,20 @@ function get_unstructured_point_and_cell_data(block)
         push!(cell_vars_names, var_name)
         _cell_data = block.GetCellData().GetArray(i-1)
         if pytype_as_string(_cell_data) != "NoneType"
-            cell_data[var_name] = vtk_to_julia(_cell_data, Float64)
+            cell_data[var_name] = vtk_to_julia(_cell_data)
         end
     end
     return point_data, cell_data
 end
 
 function extract_unstructured_data(block, poly = false)
-    point_coords = vtk_to_julia(block.GetPoints().GetData(), Float64)
+    point_coords = vtk_to_julia(block.GetPoints().GetData())
     num_of_cells = block.GetNumberOfCells()
 
     _cell_types = Vector{Int}()
     if !poly
-        _cell_types = vtk_to_julia(block.GetCellTypesArray(), Int)
-        vtk_cell_conn = vtk_to_julia(block.GetCells().GetData(), Int) 
+        _cell_types = vtk_to_julia(block.GetCellTypesArray())
+        vtk_cell_conn = vtk_to_julia(block.GetCells().GetData()) 
         _cell_connectivity = Vector{Int}[]
         i = 1
         while i <= length(vtk_cell_conn)
@@ -178,7 +178,7 @@ function extract_unstructured_data(block, poly = false)
         _cell_types = Int[]
         _cell_connectivity = Vector{Int}[]
 
-        vtk_verts = vtk_to_julia(block.GetVerts().GetData(), Int)
+        vtk_verts = vtk_to_julia(block.GetVerts().GetData())
         i = 1
         while i <= length(vtk_verts)
             npoints = vtk_verts[i]
@@ -191,7 +191,7 @@ function extract_unstructured_data(block, poly = false)
             i += npoints + 1
         end
 
-        vtk_lines = vtk_to_julia(block.GetLines().GetData(), Int)
+        vtk_lines = vtk_to_julia(block.GetLines().GetData())
         i = 1
         while i <= length(vtk_lines)
             npoints = vtk_lines[i]
@@ -204,7 +204,7 @@ function extract_unstructured_data(block, poly = false)
             i += npoints + 1
         end
 
-        vtk_polys = vtk_to_julia(block.GetPolys().GetData(), Int)
+        vtk_polys = vtk_to_julia(block.GetPolys().GetData())
         i = 1
         while i <= length(vtk_polys)
             npoints = vtk_polys[i]
@@ -219,7 +219,7 @@ function extract_unstructured_data(block, poly = false)
             i += npoints + 1
         end
 
-        vtk_strips = vtk_to_julia(block.GetStrips().GetData(), Int)
+        vtk_strips = vtk_to_julia(block.GetStrips().GetData())
         i = 1
         while i <= length(vtk_strips)
             npoints = vtk_strips[i]
@@ -244,15 +244,9 @@ function get_structured_point_and_cell_data(block)
     point_vars_names = []
     for i in 1:block.GetPointData().GetNumberOfArrays()
         var_name = block.GetPointData().GetArrayName(i-1)
-		println("This is var_name: ",var_name)
-		println("block number of arrays: ", block.GetPointData().GetNumberOfArrays())
-		println("This is block.GetPointData() ", block.GetPointData())
         push!(point_vars_names, var_name)
         _point_data = block.GetPointData().GetArray(i-1)
-		println("This is point data: ",_point_data)
 		if pytype_as_string(_point_data) != "NoneType" && pytype_as_string(_point_data) != nothing
-			println("pytype as string of point data ",pytype_as_string(_point_data))
-           #_point_data_ = vtk_to_julia(_point_data, Float64)
 		   _point_data_ = vtk_to_julia(_point_data) 
 		   var_dim = length(size(_point_data_)) == 1 ? 1 : size(_point_data_,1)
             if var_dim == 1
@@ -289,9 +283,11 @@ function extract_structured_data(block)
 
     _extents = block.GetDimensions()
     _dim = length(_extents)
-    point_coords = reshape(_point_coords, (_dim, _extents...))
+	point_coords = reshape(_point_coords, (_dim, _extents...))
     point_data, cell_data = get_structured_point_and_cell_data(block)
-    return VTKStructuredData(point_coords, point_data, cell_data)
+	println("point coords as tuple ", tuple(point_coords))
+	println("try to fix point coords as tuple ", [point_coords...])
+	return VTKStructuredData([point_coords...], point_data, cell_data)
 end
 
 function extract_rectilinear_data(block)
@@ -321,8 +317,6 @@ function extract_image_data(block)
 	extents = (block.GetDimensions()...,)
     point_extents = (extents...,)
     cell_extents = (([extents...] .- 1)...,)
-	println("this is point_extents ",point_extents)
-	println("this is cell_extents ", cell_extents)
     point_data, cell_data = get_structured_point_and_cell_data(block)
     return VTKUniformRectilinearData(origin, spacing, extents, point_data, cell_data)
 end
